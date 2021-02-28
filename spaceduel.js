@@ -17,6 +17,45 @@
  * along with spaceduel-js.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+class Sprite {
+    constructor(name, ctx, x, y) {
+        this.sprite = document.getElementById(name);
+        this.ctx = ctx;
+
+        this.x = x - this.sprite.naturalWidth;
+        this.y = y - this.sprite.naturalHeight;
+
+        this.loaded = false;
+        this.sprite.onload = function () {
+            console.log('loaded');
+            this.loaded = true;
+        }.bind(this);
+    }
+
+    draw() {
+        this.ctx.drawImage(this.sprite, this.x, this.y);
+    }
+}
+
+class Ship extends Sprite {
+    constructor(name, ctx, x, y, rot) {
+        super(name, ctx, x, y);
+        this.rot = rot;
+
+        this.avail_bullets = 0;
+        this.fired_bullets = 0;
+    }
+
+    draw() {
+        this.ctx.save();
+        this.ctx.translate(this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+        this.ctx.rotate(this.rot * Math.PI / 180);
+        this.ctx.drawImage(this.sprite, this.x, this.y);
+        this.ctx.restore();
+    }
+}
+
 class Game {
     constructor() {
         this.canvas = document.getElementById('screen');
@@ -26,25 +65,41 @@ class Game {
         this.canvas.height = 600;
 
         this.background = document.getElementById('background');
-        this.sun = document.getElementById('sprite_sun');
+        this.background_loaded = false;
+        this.background.onload = function() {
+            console.log('loaded');
+            this.background_loaded = true;
+        }.bind(this);
+
+        this.sun = new Sprite('sprite_sun', this.ctx, this.canvas.width / 2, this.canvas.height / 2);
+
+        const y = this.canvas.height / 2;
+        const x1 = this.canvas.width / 4;
+        const x2 = x1 * 3;
+        this.ship1 = new Ship('sprite_ship1', this.ctx, x1, y, 0);
+        this.ship2 = new Ship('sprite_ship2', this.ctx, x2, y, 90);
     }
 
     init() {
-        this._init_view();
+        console.log(this.sun.loaded);
+        console.log(this.ship1.loaded);
+        console.log(this.ship2.loaded);
+        // while (!this.background_loaded) ;
+        // while (!this.sun.loaded) ;
+        // while (!this.ship1.loaded) ;
+        // while (!this.ship2.loaded) ;
     }
 
-    _init_view() {
-        this.background.onload = function() {
-            let pattern = this.ctx.createPattern(this.background, 'repeat');
-            this.ctx.fillStyle = pattern;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        }.bind(this);
+    _drawAll() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this._drawBackground();
+        this.sun.draw();
+    }
 
-        this.sun.onload = function () {
-            this.ctx.drawImage(this.sun,
-                this.canvas.width / 2 - this.sun.naturalWidth / 2,
-                this.canvas.height / 2 - this.sun.naturalHeight / 2);
-        }.bind(this);
+    _drawBackground() {
+        let pattern = this.ctx.createPattern(this.background, 'repeat');
+        this.ctx.fillStyle = pattern;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
