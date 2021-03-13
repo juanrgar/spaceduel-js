@@ -38,13 +38,12 @@ class Sprite {
     }
 }
 
-class Ship extends Sprite {
+class MobileSprite extends Sprite {
     constructor(name, ctx, x, y, rot) {
         super(name, ctx, x, y);
         this.rot = rot;
-
-        this.avail_bullets = 0;
-        this.fired_bullets = 0;
+        this.vel_x = 3.0;
+        this.vel_y = 1.7;
     }
 
     draw() {
@@ -55,6 +54,43 @@ class Ship extends Sprite {
         this.ctx.drawImage(this.sprite, this.draw_x, this.draw_y);
         this.ctx.restore();
     }
+
+    computeGravity(gameSpeed, sunGravity) {
+        const ex = this.x - this.ctx.canvas.width / 2;
+        const ey = this.y - this.ctx.canvas.height / 2;
+        const abs_2 = ex*ex + ey*ey;
+        const sq = Math.sqrt(abs_2);
+        const nx = ex / sq;
+        const ny = ey / sq;
+        const eg = sunGravity * gameSpeed;
+
+        const dvx = eg * nx / abs_2;
+        const dvy = eg * ny / abs_2;
+
+        this.vel_x -= dvx;
+        this.vel_y -= dvy;
+
+        console.log('vel x : ' + this.vel_x);
+        console.log('vel y : ' + this.vel_y);
+    }
+
+    forward(gameSpeed) {
+        this.x += this.vel_x;
+        this.y += this.vel_y;
+        this._update_draw_pos();
+
+        console.log('x : ' + this.x);
+        console.log('y : ' + this.y);
+    }
+}
+
+class Ship extends MobileSprite {
+    constructor(name, ctx, x, y, rot) {
+        super(name, ctx, x, y);
+
+        this.avail_bullets = 0;
+        this.fired_bullets = 0;
+    }
 }
 
 class Game {
@@ -64,6 +100,14 @@ class Game {
 
         this.canvas.width = 800;
         this.canvas.height = 600;
+
+        document.addEventListener('keypress', function(event) {
+            console.log(event);
+        });
+
+        document.addEventListener('keydown', function(event) {
+            console.log(event);
+        });
     }
 
     init() {
@@ -78,6 +122,7 @@ class Game {
         this.ship2 = new Ship('sprite_ship2', this.ctx, x2, y, 180);
 
         this._drawAll();
+        window.requestAnimationFrame(this._update.bind(this));
     }
 
     _drawAll() {
@@ -92,6 +137,13 @@ class Game {
         let pattern = this.ctx.createPattern(this.background, 'repeat');
         this.ctx.fillStyle = pattern;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    _update() {
+//        this.ship1.computeGravity(1, 2200);
+//        this.ship1.forward(1);
+        this._drawAll();
+        window.requestAnimationFrame(this._update.bind(this));
     }
 }
 
