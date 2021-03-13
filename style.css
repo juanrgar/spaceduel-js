@@ -11,6 +11,7 @@ a {
 
 #screen {
     background-color: white;
+    outline: blue 3px solid;
 }
 
 .sprite {

@@ -23,18 +23,18 @@ class Sprite {
         this.sprite = document.getElementById(name);
         this.ctx = ctx;
 
-        this.x = x - this.sprite.naturalWidth;
-        this.y = y - this.sprite.naturalHeight;
+        this.x = x;
+        this.y = y;
+        this._update_draw_pos();
+    }
 
-        this.loaded = false;
-        this.sprite.onload = function () {
-            console.log('loaded');
-            this.loaded = true;
-        }.bind(this);
+    _update_draw_pos() {
+        this.draw_x = this.x - this.sprite.naturalWidth / 2;
+        this.draw_y = this.y - this.sprite.naturalHeight / 2;
     }
 
     draw() {
-        this.ctx.drawImage(this.sprite, this.x, this.y);
+        this.ctx.drawImage(this.sprite, this.draw_x, this.draw_y);
     }
 }
 
@@ -49,9 +49,10 @@ class Ship extends Sprite {
 
     draw() {
         this.ctx.save();
-        this.ctx.translate(this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+        this.ctx.translate(this.x, this.y);
         this.ctx.rotate(this.rot * Math.PI / 180);
-        this.ctx.drawImage(this.sprite, this.x, this.y);
+        this.ctx.translate(-this.x, -this.y);
+        this.ctx.drawImage(this.sprite, this.draw_x, this.draw_y);
         this.ctx.restore();
     }
 }
@@ -63,13 +64,10 @@ class Game {
 
         this.canvas.width = 800;
         this.canvas.height = 600;
+    }
 
+    init() {
         this.background = document.getElementById('background');
-        this.background_loaded = false;
-        this.background.onload = function() {
-            console.log('loaded');
-            this.background_loaded = true;
-        }.bind(this);
 
         this.sun = new Sprite('sprite_sun', this.ctx, this.canvas.width / 2, this.canvas.height / 2);
 
@@ -77,23 +75,17 @@ class Game {
         const x1 = this.canvas.width / 4;
         const x2 = x1 * 3;
         this.ship1 = new Ship('sprite_ship1', this.ctx, x1, y, 0);
-        this.ship2 = new Ship('sprite_ship2', this.ctx, x2, y, 90);
-    }
+        this.ship2 = new Ship('sprite_ship2', this.ctx, x2, y, 180);
 
-    init() {
-        console.log(this.sun.loaded);
-        console.log(this.ship1.loaded);
-        console.log(this.ship2.loaded);
-        // while (!this.background_loaded) ;
-        // while (!this.sun.loaded) ;
-        // while (!this.ship1.loaded) ;
-        // while (!this.ship2.loaded) ;
+        this._drawAll();
     }
 
     _drawAll() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._drawBackground();
         this.sun.draw();
+        this.ship1.draw();
+        this.ship2.draw();
     }
 
     _drawBackground() {
@@ -105,6 +97,6 @@ class Game {
 
 const game = new Game();
 
-$(function() {
+$(window).on("load", function () {
     game.init();
 });
